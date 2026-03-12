@@ -7,13 +7,19 @@
   <style>
     #auto-auth-banner {
       display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
       background: #e8f5e9;
       color: #2e7d32;
-      padding: 10px 16px;
-      margin: 10px 50px;
+      padding: 12px 16px;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       border: 1px solid #a5d6a7;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      max-width: 350px;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -39,37 +45,36 @@
       // 로그인 응답에서 authToken 자동 저장
       responseInterceptor: function (response) {
         try {
-          var data = typeof response.body === "string"
-            ? JSON.parse(response.body)
-            : response.body;
+          var data = response.obj || response.body;
+          if (typeof data === "string") data = JSON.parse(data);
+          if (!data && response.text) data = JSON.parse(response.text);
 
           if (data && data.result && data.result.authToken) {
             var token = data.result.authToken;
-            ui.preauthorizeSecurityDefinition("BearerAuth", { scheme: "bearer", value: token });
+            var loginId = data.result.loginId || "";
             window._savedAuthToken = token;
 
             var banner = document.getElementById("auto-auth-banner");
-            banner.textContent = "authToken 자동 저장 완료: " + token.substring(0, 20) + "...";
+            banner.innerHTML = "<b>loginId:</b> " + loginId + "<br><b>authToken:</b> " + token;
             banner.style.display = "block";
-            setTimeout(function () { banner.style.display = "none"; }, 5000);
           }
         } catch (e) {
-          // ignore parse errors
+          console.log("responseInterceptor error:", e);
         }
         return response;
       },
 
-      // 모든 요청에 X-device-info 헤더 자동 추가 + loginId/loginPwd Base64 자동 인코딩
+      // X-device-info + authToken 자동 추가 + Base64 인코딩
       requestInterceptor: function (request) {
         if (!request.headers["X-device-info"]) {
           request.headers["X-device-info"] =
             "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
         }
-        // 저장된 authToken이 있고 Authorization 헤더가 없으면 자동 추가
-        if (window._savedAuthToken && !request.headers["Authorization"]) {
-          request.headers["Authorization"] = "Bearer " + window._savedAuthToken;
+        var savedToken = window._savedAuthToken;
+        if (savedToken && !request.headers["Authorization"]) {
+          request.headers["Authorization"] = "Bearer " + savedToken;
         }
-        // loginId, loginPwd 평문 → Base64 자동 변환
+
         if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
           try {
             var body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
