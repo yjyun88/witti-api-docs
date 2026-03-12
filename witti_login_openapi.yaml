@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: "[1] 위티 로그인 (BtoB, BtoC)"
+  title: "위티버스 BtoB API 문서 - 내부 테스트용"
   description: 위티버스 통합 로그인 및 토큰 갱신 API
   version: 1.0.0
 
