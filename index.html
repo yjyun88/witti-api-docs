@@ -4,16 +4,68 @@
   <meta charset="UTF-8">
   <title>위티 API 문서</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    #auto-auth-banner {
+      display: none;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 10px 16px;
+      margin: 10px 50px;
+      border-radius: 6px;
+      font-size: 14px;
+      border: 1px solid #a5d6a7;
+    }
+  </style>
 </head>
 <body>
+  <div id="auto-auth-banner"></div>
   <div id="swagger-ui"></div>
   <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
   <script>
-    SwaggerUIBundle({
+    const ui = SwaggerUIBundle({
       url: "witti_login_openapi.yaml",
       dom_id: '#swagger-ui',
       presets: [SwaggerUIBundle.presets.apis],
-      layout: "BaseLayout"
+      layout: "BaseLayout",
+
+      // X-device-info 기본값 설정
+      onComplete: function () {
+        ui.preauthorizeApiKey(
+          "XDeviceInfo",
+          "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6"
+        );
+      },
+
+      // 로그인 응답에서 authToken 자동 저장
+      responseInterceptor: function (response) {
+        try {
+          var data = typeof response.body === "string"
+            ? JSON.parse(response.body)
+            : response.body;
+
+          if (data && data.result && data.result.authToken) {
+            var token = data.result.authToken;
+            ui.preauthorizeSecurityDefinition("BearerAuth", { value: token });
+
+            var banner = document.getElementById("auto-auth-banner");
+            banner.textContent = "authToken 자동 저장 완료: " + token.substring(0, 20) + "...";
+            banner.style.display = "block";
+            setTimeout(function () { banner.style.display = "none"; }, 5000);
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
+        return response;
+      },
+
+      // 모든 요청에 X-device-info 헤더 자동 추가
+      requestInterceptor: function (request) {
+        if (!request.headers["X-device-info"]) {
+          request.headers["X-device-info"] =
+            "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
+        }
+        return request;
+      }
     });
   </script>
 </body>

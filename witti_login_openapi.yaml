@@ -55,14 +55,9 @@ paths:
                 loginId:
                   type: string
                   description: "Base64 인코딩된 로그인 ID"
-                  example: "dGVzdA=="
                 loginPwd:
                   type: string
                   description: "Base64 인코딩된 비밀번호"
-                  example: "dGVzdA=="
-                devicePtk:
-                  type: string
-                  description: "디바이스 푸시 토큰 (optional)"
       responses:
         "200":
           description: 로그인 성공
@@ -104,9 +99,8 @@ paths:
           description: "자녀 ID (미선택시 childId0 사용)"
           schema:
             type: string
-            example: "C000000001"
       security:
-        - BearerRefreshToken: []
+        - BearerAuth: []
       responses:
         "200":
           description: 토큰 갱신 성공
@@ -124,10 +118,10 @@ paths:
 
 components:
   securitySchemes:
-    BearerRefreshToken:
+    BearerAuth:
       type: http
       scheme: bearer
-      description: "리프레시 토큰 (Authorization: Bearer {refreshToken})"
+      description: "authToken (로그인 응답에서 자동 저장됨)"
     XDeviceInfo:
       type: apiKey
       in: header
