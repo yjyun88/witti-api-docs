@@ -55,9 +55,11 @@ paths:
                 loginId:
                   type: string
                   description: "로그인 ID (평문 입력 시 자동 Base64 인코딩)"
+                  example: "MGtest000"
                 loginPwd:
                   type: string
                   description: "비밀번호 (평문 입력 시 자동 Base64 인코딩)"
+                  example: "mini1122@@"
       responses:
         "200":
           description: 로그인 성공

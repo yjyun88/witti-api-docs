@@ -45,7 +45,8 @@
 
           if (data && data.result && data.result.authToken) {
             var token = data.result.authToken;
-            ui.preauthorizeSecurityDefinition("BearerAuth", { value: token });
+            ui.preauthorizeSecurityDefinition("BearerAuth", { scheme: "bearer", value: token });
+            window._savedAuthToken = token;
 
             var banner = document.getElementById("auto-auth-banner");
             banner.textContent = "authToken 자동 저장 완료: " + token.substring(0, 20) + "...";
@@ -63,6 +64,10 @@
         if (!request.headers["X-device-info"]) {
           request.headers["X-device-info"] =
             "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
+        }
+        // 저장된 authToken이 있고 Authorization 헤더가 없으면 자동 추가
+        if (window._savedAuthToken && !request.headers["Authorization"]) {
+          request.headers["Authorization"] = "Bearer " + window._savedAuthToken;
         }
         // loginId, loginPwd 평문 → Base64 자동 변환
         if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
