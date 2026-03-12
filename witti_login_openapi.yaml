@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: "위티버스 BtoB API 문서 - 내부 테스트용"
-  description: "위티버스 BtoB 통합 API 문서"
+  title: "위티버스 API 문서 - 내부 테스트용"
+  description: "위티버스 통합 API 문서"
   version: "1.0.0"
 
 servers:
