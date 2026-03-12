@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: "위티버스 BtoB API 문서 - 내부 테스트용"
-  description: 위티버스 통합 로그인 및 토큰 갱신 API
-  version: 1.0.0
+  description: "위티버스 BtoB 통합 API 문서. 로그인 API를 제외한 모든 API는 Authorization 헤더에 authToken이 필요합니다 (requestInterceptor에서 자동 처리)."
+  version: "1.0.0"
 
 servers:
   - url: https://api.wittiverse.com/v2
@@ -12,20 +12,43 @@ servers:
   - url: https://dev-api.wittiverse.com/v2
     description: Dev
 
+tags:
+  - name: 인증 (로그인/토큰)
+    description: 로그인 및 토큰 관련 API
+  - name: 클래스 선택
+    description: 클래스 목록 및 학습 시작 관련 API
+  - name: 위티스쿨
+    description: 위티스쿨 관련 API
+  - name: 위티TV
+    description: 위티TV 관련 API
+  - name: 위티플레이
+    description: 위티플레이 (미니게임) 관련 API
+  - name: 위티박스(런처)
+    description: 위티박스 런처, 커리큘럼, 리포트, 미션 관련 API
+  - name: 위티App
+    description: 위티App 캐릭터, 미션, 출석, 상점, 퀴즈 등 관련 API
+  - name: 공통
+    description: 공통 API
+  - name: 학습 이력 등록
+    description: 학습 이력 등록 (IAS) API
+
 paths:
+  # ============================================================
+  # 인증 (로그인/토큰)
+  # ============================================================
   /authenticate/login:
     post:
-      summary: 통합 로그인
-      description: ID/PW 기반 통합 로그인. loginId, loginPwd는 Base64 인코딩 필요.
       tags:
-        - 인증
+        - 인증 (로그인/토큰)
+      summary: 통합 로그인
+      operationId: login
       security:
         - XDeviceInfo: []
       parameters:
         - name: loginTp
           in: query
           required: true
-          description: "로그인 타입 (L=런처, P=학부모앱, T=티칭교사앱, B=전자칠판)"
+          description: "로그인 타입"
           schema:
             type: string
             enum: [L, P, T, B]
@@ -33,14 +56,14 @@ paths:
         - name: ptnrId
           in: query
           required: true
-          description: 파트너 ID
+          description: "파트너 ID"
           schema:
             type: string
             example: "1102"
         - name: autoLoginYn
           in: query
           required: false
-          description: "자동로그인 체크 Y/N (optional)"
+          description: "자동 로그인 여부"
           schema:
             type: string
             enum: [Y, N]
@@ -75,13 +98,10 @@ paths:
                     properties:
                       authToken:
                         type: string
-                        description: 인증 토큰
                       refreshToken:
                         type: string
-                        description: 리프레시 토큰
                       childList:
                         type: array
-                        description: 자녀 목록
                         items:
                           type: object
                           properties:
@@ -92,15 +112,15 @@ paths:
 
   /authenticate/token/issue:
     get:
-      summary: 토큰 갱신 (issue token)
-      description: 리프레시 토큰으로 새 인증 토큰 발급. Pre-request에서 자동 로그인 후 refreshToken/childId 저장.
       tags:
-        - 인증
+        - 인증 (로그인/토큰)
+      summary: 토큰 갱신
+      operationId: tokenIssue
       parameters:
         - name: childId
           in: query
           required: false
-          description: "자녀 ID (미선택시 childId0 사용)"
+          description: "자녀 ID"
           schema:
             type: string
       responses:
@@ -116,12 +136,1889 @@ paths:
                     properties:
                       authToken:
                         type: string
-                        description: 새 인증 토큰
+
+  # ============================================================
+  # 클래스 선택
+  # ============================================================
+  /authenticate/classes/{id}:
+    get:
+      tags:
+        - 클래스 선택
+      summary: 클래스 목록
+      operationId: getClasses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "로그인 ID"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 클래스 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /authenticate/classes:
+    get:
+      tags:
+        - 클래스 선택
+      summary: 클래스 내 학생 목록
+      operationId: getClassStudents
+      parameters:
+        - name: classId
+          in: query
+          required: true
+          description: "클래스 ID"
+          schema:
+            type: string
+            example: "C000000143"
+      responses:
+        "200":
+          description: 학생 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /authenticate/study/access:
+    post:
+      tags:
+        - 클래스 선택
+      summary: 학습 시작
+      operationId: studyAccess
+      security:
+        - XDeviceInfo: []
+      parameters:
+        - name: loginTp
+          in: query
+          required: true
+          schema:
+            type: string
+            example: L
+        - name: autoLoginYn
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Y
+        - name: ptnrId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId:
+                  type: string
+                  example: "S000000818"
+                loginId:
+                  type: string
+                accessType:
+                  type: string
+                  example: "C"
+      responses:
+        "200":
+          description: 학습 시작 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 위티스쿨
+  # ============================================================
+  /witti-school/start-study:
+    post:
+      tags:
+        - 위티스쿨
+      summary: 학습 시작
+      operationId: wittiSchoolStartStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prodId:
+                  type: string
+                  example: "PI-00000000000000001"
+                startDate:
+                  type: string
+                  example: "2025-04-15"
+      responses:
+        "200":
+          description: 학습 시작 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/reset-study:
+    post:
+      tags:
+        - 위티스쿨
+      summary: 학습 초기화
+      operationId: wittiSchoolResetStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prodId:
+                  type: string
+                  example: "PI-00000000000000001"
+      responses:
+        "200":
+          description: 학습 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/verify:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 최초접속 확인
+      operationId: wittiSchoolVerify
+      responses:
+        "200":
+          description: 최초접속 확인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/brand:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 브랜드 확인
+      operationId: wittiSchoolBrand
+      responses:
+        "200":
+          description: 브랜드 확인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/main:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 메인 화면
+      operationId: wittiSchoolMain
+      responses:
+        "200":
+          description: 메인 화면 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/aram-bookworld/main:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 아람북월드 메인
+      operationId: aramBookworldMain
+      parameters:
+        - name: ptnrId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1102"
+        - name: prodId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "PI-00000000000000001"
+        - name: itemCd
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "AR0000010"
+        - name: tmlnDt
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "2025-06-26"
+      responses:
+        "200":
+          description: 아람북월드 메인 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/aram-bookworld/subject:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 아람북월드 과목
+      operationId: aramBookworldSubject
+      parameters:
+        - name: ptnrId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1102"
+        - name: prodId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "PI-00000000000000001"
+      responses:
+        "200":
+          description: 아람북월드 과목 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/aram-bookworld/subject/{subjCd}:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 아람북월드 과목 상세
+      operationId: aramBookworldSubjectDetail
+      parameters:
+        - name: subjCd
+          in: path
+          required: true
+          description: "과목 코드"
+          schema:
+            type: string
+        - name: ptnrId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1102"
+        - name: prodId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "PI-00000000000000001"
+        - name: itemCd
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pageNo
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: pageRow
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: curtnSeq
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 4
+      responses:
+        "200":
+          description: 아람북월드 과목 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/e-book/main:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 도서관 메인 화면
+      operationId: ebookMain
+      responses:
+        "200":
+          description: 도서관 메인 화면 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-school/e-book/main/book/list/catgry:
+    get:
+      tags:
+        - 위티스쿨
+      summary: 도서관 책 리스트 조회
+      operationId: ebookListByCatgry
+      parameters:
+        - name: pageNo
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: pageRow
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 999
+        - name: catgryCd
+          in: query
+          required: true
+          description: "카테고리 코드"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 도서관 책 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 위티TV
+  # ============================================================
+  /tv/verify:
+    get:
+      tags:
+        - 위티TV
+      summary: 최초접속 확인
+      operationId: tvVerify
+      responses:
+        "200":
+          description: 최초접속 확인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/category:
+    get:
+      tags:
+        - 위티TV
+      summary: 카테고리 리스트
+      operationId: tvCategory
+      parameters:
+        - name: catgryCd
+          in: query
+          required: true
+          description: "카테고리 코드"
+          schema:
+            type: string
+            enum: [L3000, L3001, L3002, L3004]
+      responses:
+        "200":
+          description: 카테고리 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/main:
+    get:
+      tags:
+        - 위티TV
+      summary: 메인 화면
+      operationId: tvMain
+      responses:
+        "200":
+          description: 메인 화면 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/main/{catgryCd}:
+    get:
+      tags:
+        - 위티TV
+      summary: 메인 (카테고리)
+      operationId: tvMainCategory
+      parameters:
+        - name: catgryCd
+          in: path
+          required: true
+          description: "카테고리 코드"
+          schema:
+            type: string
+        - name: subCatgryCd
+          in: query
+          required: false
+          description: "하위 카테고리 코드"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 메인 (카테고리) 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/category/detail:
+    get:
+      tags:
+        - 위티TV
+      summary: 카테고리 별 상세
+      operationId: tvCategoryDetail
+      parameters:
+        - name: catgryCd
+          in: query
+          required: true
+          description: "카테고리 코드"
+          schema:
+            type: string
+        - name: searchTp
+          in: query
+          required: false
+          description: "검색 타입"
+          schema:
+            type: string
+            enum: [unwatched, watched, new, popular]
+      responses:
+        "200":
+          description: 카테고리 별 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/category/detail/newPop:
+    get:
+      tags:
+        - 위티TV
+      summary: 신작/인기 카테고리 별 상세
+      operationId: tvCategoryDetailNewPop
+      parameters:
+        - name: topCatgryCd
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: upCatgryCd
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: newPopTp
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: searchTp
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 신작/인기 카테고리 별 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/favorites:
+    get:
+      tags:
+        - 위티TV
+      summary: 즐겨찾기 리스트 조회
+      operationId: tvFavoritesList
+      parameters:
+        - name: topCatgryCd
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: upCatgryCd
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 즐겨찾기 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티TV
+      summary: 즐겨찾기 등록/해제
+      operationId: tvFavoritesToggle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "CB-240404P4720782772"
+                favoritesYn:
+                  type: string
+                  enum: [Y, N]
+                  example: "N"
+      responses:
+        "200":
+          description: 즐겨찾기 등록/해제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/recommend:
+    get:
+      tags:
+        - 위티TV
+      summary: 플레이어 다음 컨텐츠 추천
+      operationId: tvRecommend
+      parameters:
+        - name: catgryCd
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 다음 컨텐츠 추천 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /tv/e-board:
+    get:
+      tags:
+        - 위티TV
+      summary: 전광판 조회
+      operationId: tvEBoard
+      responses:
+        "200":
+          description: 전광판 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 위티플레이
+  # ============================================================
+  /witti-play/game/main:
+    get:
+      tags:
+        - 위티플레이
+      summary: 미니 게임 보유 위티팡 조회
+      operationId: wittiPlayGameMain
+      parameters:
+        - name: contsId
+          in: query
+          required: true
+          description: "콘텐츠 ID"
+          schema:
+            type: string
+            example: "CB-240129000000G0001"
+      responses:
+        "200":
+          description: 보유 위티팡 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-play/game/score:
+    get:
+      tags:
+        - 위티플레이
+      summary: 미니 게임 점수 조회
+      operationId: wittiPlayGameScoreGet
+      parameters:
+        - name: contsId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 미니 게임 점수 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티플레이
+      summary: 미니 게임 점수 저장
+      operationId: wittiPlayGameScoreSave
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "CB-240129000000G0001"
+                gameScore:
+                  type: string
+                  example: "77777"
+                gameHistSeq:
+                  type: string
+                  example: "1"
+      responses:
+        "200":
+          description: 미니 게임 점수 저장 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-play/game/ranked:
+    get:
+      tags:
+        - 위티플레이
+      summary: 미니 게임 랭킹 리스트 조회
+      operationId: wittiPlayGameRanked
+      parameters:
+        - name: contsId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 미니 게임 랭킹 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-play/game/init:
+    post:
+      tags:
+        - 위티플레이
+      summary: 미니 게임 초기화
+      operationId: wittiPlayGameInit
+      responses:
+        "200":
+          description: 미니 게임 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 위티박스(런처)
+  # ============================================================
+  /config/apps/list:
+    get:
+      tags:
+        - 위티박스(런처)
+      summary: 런처 앱 리스트
+      operationId: configAppsList
+      security:
+        - XDeviceInfo: []
+      parameters:
+        - name: ptnrId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1102"
+        - name: managedYn
+          in: query
+          required: true
+          description: "관리 여부"
+          schema:
+            type: string
+            enum: [N, B]
+      responses:
+        "200":
+          description: 런처 앱 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-box/curriculum:
+    get:
+      tags:
+        - 위티박스(런처)
+      summary: 커리큘럼 조회
+      operationId: wittiBoxCurriculum
+      parameters:
+        - name: childId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 커리큘럼 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/attendance/curriculum:
+    post:
+      tags:
+        - 위티박스(런처)
+      summary: 출석 시간 전송
+      operationId: attendanceCurriculum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isMidNight:
+                  type: string
+                  example: "false"
+      responses:
+        "200":
+          description: 출석 시간 전송 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /report/parentReport:
+    post:
+      tags:
+        - 위티박스(런처)
+      summary: 학습 리포트 > 부모(학생) / 주간
+      operationId: parentReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                curriculumTp:
+                  type: integer
+                  example: 0
+                childAge:
+                  type: integer
+                  example: 5
+                childId:
+                  type: string
+                year:
+                  type: integer
+                  example: 2026
+                month:
+                  type: integer
+                  example: 3
+                week:
+                  type: integer
+                  example: 2
+                reportType:
+                  type: string
+                  example: "WEEK"
+                parentTp:
+                  type: string
+                  example: "P"
+      responses:
+        "200":
+          description: 부모(학생) 주간 리포트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /report/teacherReport:
+    post:
+      tags:
+        - 위티박스(런처)
+      summary: "학습 리포트 > 선생님 (주간/월간)"
+      description: |
+        선생님 학습 리포트를 조회합니다.
+        - 주간 리포트: reportType을 "WEEK"으로 설정하고, week 파라미터를 포함합니다. parentTp에 "T"를 설정합니다.
+        - 월간 리포트: reportType을 "MONTH"로 설정하고, week 파라미터를 생략합니다. parentTp를 생략할 수 있습니다.
+      operationId: teacherReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                curriculumTp:
+                  type: integer
+                  example: 0
+                childAge:
+                  type: integer
+                  example: 5
+                childId:
+                  type: string
+                year:
+                  type: integer
+                  example: 2026
+                month:
+                  type: integer
+                  example: 2
+                week:
+                  type: integer
+                  description: "주간 리포트 시 사용 (월간 리포트에서는 생략)"
+                  example: 52
+                reportType:
+                  type: string
+                  enum: [WEEK, MONTH]
+                  example: "WEEK"
+                parentTp:
+                  type: string
+                  description: "주간 리포트 시 'T' 설정 (월간 리포트에서는 생략 가능)"
+                  example: "T"
+      responses:
+        "200":
+          description: 선생님 리포트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /report/teacherActivityReport:
+    post:
+      tags:
+        - 위티박스(런처)
+      summary: 학습 리포트 > 선생님 / 이 주 활동현황
+      operationId: teacherActivityReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                curriculumTp:
+                  type: integer
+                  example: 0
+                childAge:
+                  type: integer
+                  example: 5
+                childId:
+                  type: string
+                year:
+                  type: integer
+                  example: 2026
+                month:
+                  type: integer
+                  example: 3
+                week:
+                  type: integer
+                  example: 2
+                reportType:
+                  type: string
+                  example: "WEEK"
+      responses:
+        "200":
+          description: 이 주 활동현황 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /mission/today/list:
+    post:
+      tags:
+        - 위티박스(런처)
+      summary: 오늘의 미션 이력/과목 조회
+      operationId: missionTodayList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                childId:
+                  type: string
+                ptnrSubTp:
+                  type: string
+                  example: "CC_DC"
+      responses:
+        "200":
+          description: 오늘의 미션 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /authenticate/study/status:
+    patch:
+      tags:
+        - 위티박스(런처)
+      summary: 학생 수업 상태 변경
+      operationId: studyStatusUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId:
+                  type: string
+                  example: "S000000273"
+                classId:
+                  type: string
+                  example: "C000000055"
+                studyStatus:
+                  type: string
+                  example: "READY"
+                loginId:
+                  type: string
+      responses:
+        "200":
+          description: 학생 수업 상태 변경 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 위티App
+  # ============================================================
+  /witti-app/init/character:
+    post:
+      tags:
+        - 위티App
+      summary: 캐릭터 초기화
+      operationId: wittiAppInitCharacter
+      responses:
+        "200":
+          description: 캐릭터 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/character:
+    post:
+      tags:
+        - 위티App
+      summary: 캐릭터 생성/저장
+      operationId: wittiAppCharacterSave
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                childId:
+                  type: string
+                  example: "ME-IC26013032870003"
+                saveTp:
+                  type: string
+                  example: "C"
+                nickName:
+                  type: string
+                  example: "고질라"
+                wearingItemList:
+                  type: array
+                  items:
+                    type: object
+                invenItemList:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: 캐릭터 생성/저장 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    get:
+      tags:
+        - 위티App
+      summary: 캐릭터 조회
+      operationId: wittiAppCharacterGet
+      responses:
+        "200":
+          description: 캐릭터 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/init/mission:
+    post:
+      tags:
+        - 위티App
+      summary: 미션 초기화
+      operationId: wittiAppInitMission
+      responses:
+        "200":
+          description: 미션 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/init/attendance:
+    post:
+      tags:
+        - 위티App
+      summary: 출석 초기화
+      operationId: wittiAppInitAttendance
+      responses:
+        "200":
+          description: 출석 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/promiseReward:
+    post:
+      tags:
+        - 위티App
+      summary: 디지털 학습기기 사용안내 보상
+      operationId: wittiAppPromiseReward
+      responses:
+        "200":
+          description: 보상 처리 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/promiseRewardInit:
+    post:
+      tags:
+        - 위티App
+      summary: 디지털 학습기기 사용안내 보상 초기화
+      operationId: wittiAppPromiseRewardInit
+      responses:
+        "200":
+          description: 보상 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/instl-app-ver:
+    get:
+      tags:
+        - 위티App
+      summary: 설치 앱 버전 조회
+      operationId: wittiAppInstlAppVer
+      responses:
+        "200":
+          description: 설치 앱 버전 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/child/list:
+    get:
+      tags:
+        - 위티App
+      summary: 자녀 리스트 조회
+      operationId: wittiAppChildList
+      responses:
+        "200":
+          description: 자녀 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/mission:
+    get:
+      tags:
+        - 위티App
+      summary: 튜토리얼 수행 여부 조회
+      operationId: wittiAppMission
+      parameters:
+        - name: misnGrp
+          in: query
+          required: true
+          description: "미션 그룹"
+          schema:
+            type: string
+            example: "TUTORIAL"
+      responses:
+        "200":
+          description: 튜토리얼 수행 여부 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/character/nickname-chk:
+    get:
+      tags:
+        - 위티App
+      summary: 캐릭터 닉네임 유효성 조회
+      operationId: wittiAppNicknameChk
+      parameters:
+        - name: nickName
+          in: query
+          required: true
+          description: "닉네임"
+          schema:
+            type: string
+            example: "폭풍테란"
+      responses:
+        "200":
+          description: 닉네임 유효성 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/character/nickname-random:
+    get:
+      tags:
+        - 위티App
+      summary: 캐릭터 닉네임 랜덤 조회
+      operationId: wittiAppNicknameRandom
+      responses:
+        "200":
+          description: 랜덤 닉네임 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/main:
+    get:
+      tags:
+        - 위티App
+      summary: 보유 위티팡 조회 (메인 화면)
+      operationId: wittiAppMain
+      responses:
+        "200":
+          description: 보유 위티팡 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/reward/list:
+    get:
+      tags:
+        - 위티App
+      summary: 위티팡 리스트 조회
+      operationId: wittiAppRewardList
+      parameters:
+        - name: rwrdClsTp
+          in: query
+          required: true
+          description: "보상 분류 타입"
+          schema:
+            type: string
+            enum: [P, M]
+      responses:
+        "200":
+          description: 위티팡 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/reward/cheat:
+    post:
+      tags:
+        - 위티App
+      summary: 위티팡 강제 지급
+      operationId: wittiAppRewardCheat
+      responses:
+        "200":
+          description: 위티팡 강제 지급 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/live-sketch/animal:
+    get:
+      tags:
+        - 위티App
+      summary: 라이브스케치 동물 리스트 조회
+      operationId: wittiAppLiveSketchAnimalList
+      responses:
+        "200":
+          description: 동물 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티App
+      summary: 라이브스케치 동물 추가
+      operationId: wittiAppLiveSketchAnimalAdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                animalMappSeq:
+                  type: string
+                  example: "402"
+      responses:
+        "200":
+          description: 동물 추가 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/init/live-sketch:
+    post:
+      tags:
+        - 위티App
+      summary: 라이브스케치 보유동물 초기화
+      operationId: wittiAppInitLiveSketch
+      responses:
+        "200":
+          description: 보유동물 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/live-sketch/animal/delete:
+    post:
+      tags:
+        - 위티App
+      summary: 라이브스케치 동물 삭제
+      operationId: wittiAppLiveSketchAnimalDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                animalMappSeq:
+                  type: string
+                  example: "402"
+      responses:
+        "200":
+          description: 동물 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/live-sketch/event:
+    post:
+      tags:
+        - 위티App
+      summary: 라이브스케치 이벤트 완료
+      operationId: wittiAppLiveSketchEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                animalMappSeq:
+                  type: string
+                  example: "517"
+                eventId:
+                  type: string
+                  example: "MI-240129000000P0022"
+      responses:
+        "200":
+          description: 이벤트 완료 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/shop-item/list:
+    get:
+      tags:
+        - 위티App
+      summary: 상점 아이템 리스트 조회
+      operationId: wittiAppShopItemList
+      responses:
+        "200":
+          description: 상점 아이템 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/shop-car/list:
+    get:
+      tags:
+        - 위티App
+      summary: 상점 미니카 리스트 조회
+      operationId: wittiAppShopCarList
+      responses:
+        "200":
+          description: 상점 미니카 리스트 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/badge:
+    get:
+      tags:
+        - 위티App
+      summary: 퀴즈 뱃지 조회
+      operationId: wittiAppBadgeGet
+      responses:
+        "200":
+          description: 퀴즈 뱃지 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티App
+      summary: 퀴즈 뱃지 장착/해제
+      operationId: wittiAppBadgeToggle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cornerTp:
+                  type: string
+                  example: "fire"
+                useYn:
+                  type: string
+                  enum: [Y, N]
+                  example: "Y"
+      responses:
+        "200":
+          description: 퀴즈 뱃지 장착/해제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/quiz:
+    get:
+      tags:
+        - 위티App
+      summary: OX 퀴즈 조회
+      operationId: wittiAppQuiz
+      parameters:
+        - name: cornerTp
+          in: query
+          required: true
+          description: "코너 타입"
+          schema:
+            type: string
+            enum: [fire, police]
+        - name: quizCatgry
+          in: query
+          required: true
+          description: "퀴즈 카테고리"
+          schema:
+            type: string
+            enum: [firefight, save, comm, rescue, helicopter, etc, safety, traffic, investigate, patrol, security, international]
+      responses:
+        "200":
+          description: OX 퀴즈 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/quiz/gift:
+    get:
+      tags:
+        - 위티App
+      summary: OX 퀴즈 선물 조회
+      operationId: wittiAppQuizGiftGet
+      parameters:
+        - name: cornerTp
+          in: query
+          required: true
+          description: "코너 타입"
+          schema:
+            type: string
+            enum: [fire, police]
+      responses:
+        "200":
+          description: OX 퀴즈 선물 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티App
+      summary: OX 퀴즈 선물 등록
+      operationId: wittiAppQuizGiftRegister
+      description: "퀴즈 선물 등록. badgeIdx - police: 1001~1003, fire: 2001~2003"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                badgeIdx:
+                  type: integer
+                  description: "뱃지 인덱스 (police: 1001~1003, fire: 2001~2003)"
+                  example: 2001
+      responses:
+        "200":
+          description: OX 퀴즈 선물 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/zodiac/list:
+    get:
+      tags:
+        - 위티App
+      summary: 황도12궁 별자리 조회
+      operationId: wittiAppZodiacList
+      responses:
+        "200":
+          description: 별자리 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/zodiac/owned:
+    post:
+      tags:
+        - 위티App
+      summary: 황도12궁 별자리 획득
+      operationId: wittiAppZodiacOwned
+      parameters:
+        - name: zodiacId
+          in: query
+          required: true
+          description: "별자리 ID"
+          schema:
+            type: string
+            example: "Zodiac_002_Taurus"
+      responses:
+        "200":
+          description: 별자리 획득 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/trip/area:
+    get:
+      tags:
+        - 위티App
+      summary: 열기구 여행 기록 조회
+      operationId: wittiAppTripAreaGet
+      responses:
+        "200":
+          description: 여행 기록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티App
+      summary: 열기구 여행 기록 등록
+      operationId: wittiAppTripAreaRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripId:
+                  type: string
+                tripImg:
+                  type: string
+                tripImgExt:
+                  type: string
+      responses:
+        "200":
+          description: 여행 기록 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/trip/area/delete:
+    post:
+      tags:
+        - 위티App
+      summary: 열기구 여행 기록 삭제
+      operationId: wittiAppTripAreaDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripSeq:
+                  type: string
+      responses:
+        "200":
+          description: 여행 기록 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/trip/area/quizReward:
+    get:
+      tags:
+        - 위티App
+      summary: 열기구 여행 퀴즈 보상 이력 조회
+      operationId: wittiAppTripQuizRewardGet
+      parameters:
+        - name: areaCd
+          in: query
+          required: true
+          description: "지역코드 (0~9)"
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 9
+      responses:
+        "200":
+          description: 퀴즈 보상 이력 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - 위티App
+      summary: 열기구 여행 퀴즈 보상 지급
+      operationId: wittiAppTripQuizRewardRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                areaCd:
+                  type: integer
+                  example: 3
+                successCount:
+                  type: integer
+                  example: 4
+                failCount:
+                  type: integer
+                  example: 1
+      responses:
+        "200":
+          description: 퀴즈 보상 지급 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /witti-app/trip/area/quizReward/delete:
+    post:
+      tags:
+        - 위티App
+      summary: 열기구 여행 퀴즈 보상 지급 초기화
+      operationId: wittiAppTripQuizRewardDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                areaCd:
+                  type: integer
+                  example: 3
+                rwrdIssDtm:
+                  type: string
+                  example: "2025-12-19"
+      responses:
+        "200":
+          description: 퀴즈 보상 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 공통
+  # ============================================================
+  /contents/random:
+    get:
+      tags:
+        - 공통
+      summary: 콘텐츠 랜덤 추천
+      operationId: contentsRandom
+      parameters:
+        - name: randomTp
+          in: query
+          required: true
+          description: "랜덤 타입"
+          schema:
+            type: string
+            enum: [MSC, CAMP]
+      responses:
+        "200":
+          description: 콘텐츠 랜덤 추천 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ============================================================
+  # 학습 이력 등록
+  # ============================================================
+  /ias/school:
+    post:
+      tags:
+        - 학습 이력 등록
+      summary: "위티스쿨 > 아람"
+      description: |
+        아람 학습 이력을 등록합니다.
+        - 일반 학습 이력: 기본 필드만 전송
+        - 포트폴리오 학습 이력: portfolio 배열을 추가로 포함하여 전송 (예: itemCd=AR0000011)
+      operationId: iasSchool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prodId
+                - itemCd
+                - curtniSeq
+                - stdLtm
+                - stdScore
+                - stdTp
+              properties:
+                prodId:
+                  type: string
+                  example: "PI-00000000000000001"
+                itemCd:
+                  type: string
+                  example: "AR0000007"
+                curtniSeq:
+                  type: integer
+                  example: 1926
+                stdLtm:
+                  type: number
+                  example: 50
+                stdScore:
+                  type: integer
+                  example: 0
+                stdTp:
+                  type: string
+                  example: "STD"
+                portfolio:
+                  type: array
+                  description: "포트폴리오 학습 이력 시 포함 (예: itemCd=AR0000011)"
+                  items:
+                    type: object
+                    properties:
+                      fileId:
+                        type: string
+                        example: "FS-250717P8751717989"
+                      fileTp:
+                        type: string
+                        example: "image"
+                      audioUrl:
+                        type: string
+                        nullable: true
+                      imgUrl:
+                        type: string
+                        nullable: true
+                      idx:
+                        type: integer
+                        example: 1
+      responses:
+        "200":
+          description: 아람 학습 이력 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /ias/school/ebook:
+    post:
+      tags:
+        - 학습 이력 등록
+      summary: "위티스쿨 > 도서관"
+      operationId: iasSchoolEbook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "CB-240730D5743755435"
+                stdLtm:
+                  type: integer
+                  example: 1
+                contsLtm:
+                  type: integer
+                  example: 1
+                stdTp:
+                  type: string
+                  example: "STD"
+                latestPage:
+                  type: integer
+                  example: 20
+      responses:
+        "200":
+          description: 도서관 학습 이력 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /ias/school/playground:
+    post:
+      tags:
+        - 학습 이력 등록
+      summary: "위티스쿨 > 상상놀이터 (MEW)"
+      operationId: iasSchoolPlayground
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "000311"
+                stdLtm:
+                  type: integer
+                  example: 1
+                contsLtm:
+                  type: integer
+                  example: 1
+                stdTp:
+                  type: string
+                  example: "STD"
+      responses:
+        "200":
+          description: 상상놀이터 학습 이력 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /ias/tv:
+    post:
+      tags:
+        - 학습 이력 등록
+      summary: 위티TV
+      operationId: iasTv
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "CB-240625P6394095049"
+                stdLtm:
+                  type: integer
+                  example: 1
+                contsLtm:
+                  type: integer
+                  example: 1
+                stdTp:
+                  type: string
+                  example: "STD"
+      responses:
+        "200":
+          description: 위티TV 학습 이력 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /ias/camp:
+    post:
+      tags:
+        - 학습 이력 등록
+      summary: "오늘의이야기 (미사용?)"
+      operationId: iasCamp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contsId:
+                  type: string
+                  example: "CB-2402161426P0033"
+                stdLtm:
+                  type: integer
+                  example: 1
+                contsLtm:
+                  type: integer
+                  example: 1
+                stdTp:
+                  type: string
+                  example: "STD"
+      responses:
+        "200":
+          description: 오늘의이야기 학습 이력 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
 
 components:
   securitySchemes:
     XDeviceInfo:
       type: apiKey
       in: header
-      name: X-device-info
-      description: "Base64 인코딩된 기기 정보"
+      name: X-Device-Info
+      description: "디바이스 정보 헤더 (Base64 인코딩된 JSON)"
