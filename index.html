@@ -68,8 +68,8 @@
         if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
           try {
             var body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
-            if (body.loginId) body.loginId = btoa(body.loginId);
-            if (body.loginPwd) body.loginPwd = btoa(body.loginPwd);
+            if (body.loginId) body.loginId = btoa(unescape(encodeURIComponent(body.loginId)));
+            if (body.loginPwd) body.loginPwd = btoa(unescape(encodeURIComponent(body.loginPwd)));
             request.body = JSON.stringify(body);
           } catch (e) {}
         }
