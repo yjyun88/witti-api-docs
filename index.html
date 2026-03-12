@@ -4,8 +4,29 @@
   <meta charset="UTF-8">
   <title>위티버스 BtoB API 문서</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    #auth-status {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid #90caf9;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      max-width: 400px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    #auth-status b { color: #0d47a1; }
+  </style>
 </head>
 <body>
+  <div id="auth-status"></div>
   <div id="swagger-ui"></div>
   <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
   <script>
@@ -23,8 +44,44 @@
         );
       },
 
-      // loginId/loginPwd Base64 자동 인코딩
+      // 로그인/학습시작 응답에서 authToken 자동 저장 + 갱신
+      responseInterceptor: function (response) {
+        try {
+          var data = response.obj || response.body;
+          if (typeof data === "string") data = JSON.parse(data);
+          if (!data && response.text) data = JSON.parse(response.text);
+
+          if (data && data.result && data.result.authToken) {
+            var token = data.result.authToken;
+            var loginId = data.result.loginId || window._savedLoginId || "";
+            var memId = data.result.memId || "";
+
+            window._savedAuthToken = token;
+            if (loginId) window._savedLoginId = loginId;
+
+            var status = document.getElementById("auth-status");
+            var html = "<b>loginId:</b> " + (window._savedLoginId || "-");
+            if (memId) html += "<br><b>memId:</b> " + memId;
+            html += "<br><b>authToken:</b> " + token;
+            status.innerHTML = html;
+            status.style.display = "block";
+          }
+        } catch (e) {
+          console.log("responseInterceptor error:", e);
+        }
+        return response;
+      },
+
+      // X-device-info fallback + authToken 자동 추가 + Base64 인코딩
       requestInterceptor: function (request) {
+        if (!request.headers["X-device-info"]) {
+          request.headers["X-device-info"] =
+            "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
+        }
+        var savedToken = window._savedAuthToken;
+        if (savedToken) {
+          request.headers["Authorization"] = "Bearer " + savedToken;
+        }
         if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
           try {
             var body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
