@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: "위티버스 BtoB API 문서 - 내부 테스트용"
-  description: "위티버스 BtoB 통합 API 문서. 로그인 API를 제외한 모든 API는 Authorization 헤더에 authToken이 필요합니다 (requestInterceptor에서 자동 처리)."
+  description: "위티버스 BtoB 통합 API 문서"
   version: "1.0.0"
 
 servers:
@@ -2017,8 +2017,12 @@ paths:
 
 components:
   securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: "authToken (로그인 응답에서 발급)"
     XDeviceInfo:
       type: apiKey
       in: header
-      name: X-Device-Info
+      name: X-device-info
       description: "디바이스 정보 헤더 (Base64 인코딩된 JSON)"
