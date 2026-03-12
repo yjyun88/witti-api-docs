@@ -58,11 +58,20 @@
         return response;
       },
 
-      // 모든 요청에 X-device-info 헤더 자동 추가
+      // 모든 요청에 X-device-info 헤더 자동 추가 + loginId/loginPwd Base64 자동 인코딩
       requestInterceptor: function (request) {
         if (!request.headers["X-device-info"]) {
           request.headers["X-device-info"] =
             "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
+        }
+        // loginId, loginPwd 평문 → Base64 자동 변환
+        if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
+          try {
+            var body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+            if (body.loginId) body.loginId = btoa(body.loginId);
+            if (body.loginPwd) body.loginPwd = btoa(body.loginPwd);
+            request.body = JSON.stringify(body);
+          } catch (e) {}
         }
         return request;
       }
