@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: "[1] 위티 로그인 (BtoB, BtoC)"
+  description: 위티버스 통합 로그인 및 토큰 갱신 API
+  version: 1.0.0
+
+servers:
+  - url: https://api.wittiverse.com/v2
+    description: Production
+  - url: https://qa-api.wittiverse.com/v2
+    description: QA
+  - url: https://dev-api.wittiverse.com/v2
+    description: Dev
+
+paths:
+  /authenticate/login:
+    post:
+      summary: 통합 로그인
+      description: ID/PW 기반 통합 로그인. loginId, loginPwd는 Base64 인코딩 필요.
+      tags:
+        - 인증
+      parameters:
+        - name: loginTp
+          in: query
+          required: true
+          description: "로그인 타입 (L=런처, P=학부모앱, T=티칭교사앱, B=전자칠판)"
+          schema:
+            type: string
+            enum: [L, P, T, B]
+            example: L
+        - name: ptnrId
+          in: query
+          required: true
+          description: 파트너 ID
+          schema:
+            type: string
+            example: "1102"
+        - name: autoLoginYn
+          in: query
+          required: false
+          description: "자동로그인 체크 Y/N (optional)"
+          schema:
+            type: string
+            enum: [Y, N]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - loginId
+                - loginPwd
+              properties:
+                loginId:
+                  type: string
+                  description: "Base64 인코딩된 로그인 ID"
+                  example: "dGVzdA=="
+                loginPwd:
+                  type: string
+                  description: "Base64 인코딩된 비밀번호"
+                  example: "dGVzdA=="
+                devicePtk:
+                  type: string
+                  description: "디바이스 푸시 토큰 (optional)"
+      responses:
+        "200":
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      authToken:
+                        type: string
+                        description: 인증 토큰
+                      refreshToken:
+                        type: string
+                        description: 리프레시 토큰
+                      childList:
+                        type: array
+                        description: 자녀 목록
+                        items:
+                          type: object
+                          properties:
+                            childId:
+                              type: string
+                            childAge:
+                              type: integer
+
+  /authenticate/token/issue:
+    get:
+      summary: 토큰 갱신 (issue token)
+      description: 리프레시 토큰으로 새 인증 토큰 발급. Pre-request에서 자동 로그인 후 refreshToken/childId 저장.
+      tags:
+        - 인증
+      parameters:
+        - name: childId
+          in: query
+          required: false
+          description: "자녀 ID (미선택시 childId0 사용)"
+          schema:
+            type: string
+            example: "C000000001"
+      security:
+        - BearerRefreshToken: []
+      responses:
+        "200":
+          description: 토큰 갱신 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      authToken:
+                        type: string
+                        description: 새 인증 토큰
+
+components:
+  securitySchemes:
+    BearerRefreshToken:
+      type: http
+      scheme: bearer
+      description: "리프레시 토큰 (Authorization: Bearer {refreshToken})"
+    XDeviceInfo:
+      type: apiKey
+      in: header
+      name: X-device-info
+      description: "Base64 인코딩된 기기 정보"
