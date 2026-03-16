@@ -116,6 +116,9 @@ paths:
         - 인증 (로그인/토큰)
       summary: 토큰 갱신
       operationId: tokenIssue
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: childId
           in: query
@@ -146,6 +149,9 @@ paths:
         - 클래스 선택
       summary: 클래스 목록
       operationId: getClasses
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -168,6 +174,9 @@ paths:
         - 클래스 선택
       summary: 클래스 내 학생 목록
       operationId: getClassStudents
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: classId
           in: query
@@ -192,6 +201,7 @@ paths:
       operationId: studyAccess
       security:
         - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: loginTp
           in: query
@@ -223,9 +233,10 @@ paths:
                   example: "S000000818"
                 loginId:
                   type: string
+                  example: "MGtest000"
                 accessType:
                   type: string
-                  example: "C"
+                  example: "L"
       responses:
         "200":
           description: 학습 시작 성공
@@ -243,6 +254,9 @@ paths:
         - 위티스쿨
       summary: 학습 시작
       operationId: wittiSchoolStartStudy
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -270,6 +284,9 @@ paths:
         - 위티스쿨
       summary: 학습 초기화
       operationId: wittiSchoolResetStudy
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -294,6 +311,9 @@ paths:
         - 위티스쿨
       summary: 최초접속 확인
       operationId: wittiSchoolVerify
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 최초접속 확인 성공
@@ -308,6 +328,9 @@ paths:
         - 위티스쿨
       summary: 브랜드 확인
       operationId: wittiSchoolBrand
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 브랜드 확인 성공
@@ -322,6 +345,9 @@ paths:
         - 위티스쿨
       summary: 메인 화면
       operationId: wittiSchoolMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 메인 화면 조회 성공
@@ -336,6 +362,9 @@ paths:
         - 위티스쿨
       summary: 아람북월드 메인
       operationId: aramBookworldMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: ptnrId
           in: query
@@ -375,6 +404,9 @@ paths:
         - 위티스쿨
       summary: 아람북월드 과목
       operationId: aramBookworldSubject
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: ptnrId
           in: query
@@ -402,6 +434,9 @@ paths:
         - 위티스쿨
       summary: 아람북월드 과목 상세
       operationId: aramBookworldSubjectDetail
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: subjCd
           in: path
@@ -409,6 +444,7 @@ paths:
           description: "과목 코드"
           schema:
             type: string
+            enum: [KOR, MTH, SCI]
         - name: ptnrId
           in: query
           required: true
@@ -424,8 +460,10 @@ paths:
         - name: itemCd
           in: query
           required: false
+          description: "아이템 코드 - AR0000010 (Step1), AR0000011 (Step2)"
           schema:
             type: string
+            enum: [AR0000010, AR0000011]
         - name: pageNo
           in: query
           required: false
@@ -439,8 +477,11 @@ paths:
         - name: curtnSeq
           in: query
           required: false
+          description: "호 선택 (1~13)"
           schema:
             type: integer
+            minimum: 1
+            maximum: 13
             example: 4
       responses:
         "200":
@@ -456,6 +497,9 @@ paths:
         - 위티스쿨
       summary: 도서관 메인 화면
       operationId: ebookMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 도서관 메인 화면 조회 성공
@@ -470,6 +514,9 @@ paths:
         - 위티스쿨
       summary: 도서관 책 리스트 조회
       operationId: ebookListByCatgry
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: pageNo
           in: query
@@ -486,9 +533,27 @@ paths:
         - name: catgryCd
           in: query
           required: true
-          description: "카테고리 코드"
+          allowEmptyValue: true
+          description: |
+            카테고리 코드 (빈값: 전체)
+            - CA-250610P3000000000: 역사/신화
+            - CA-250610P3000000001: 성/안전
+            - CA-250610P3000000002: 키즈교양
+            - CA-240708P3000000000: 생활/인성
+            - CA-240708P3000000001: 명작/예술
+            - CA-240708P3000000002: 수학/과학
+            - CA-240708P3000000003: 언어/사고
           schema:
             type: string
+            enum:
+              - ""
+              - CA-250610P3000000000
+              - CA-250610P3000000001
+              - CA-250610P3000000002
+              - CA-240708P3000000000
+              - CA-240708P3000000001
+              - CA-240708P3000000002
+              - CA-240708P3000000003
       responses:
         "200":
           description: 도서관 책 리스트 조회 성공
@@ -506,6 +571,9 @@ paths:
         - 위티TV
       summary: 최초접속 확인
       operationId: tvVerify
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 최초접속 확인 성공
@@ -520,6 +588,9 @@ paths:
         - 위티TV
       summary: 카테고리 리스트
       operationId: tvCategory
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: catgryCd
           in: query
@@ -542,6 +613,9 @@ paths:
         - 위티TV
       summary: 메인 화면
       operationId: tvMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 메인 화면 조회 성공
@@ -556,6 +630,9 @@ paths:
         - 위티TV
       summary: 메인 (카테고리)
       operationId: tvMainCategory
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: catgryCd
           in: path
@@ -583,6 +660,9 @@ paths:
         - 위티TV
       summary: 카테고리 별 상세
       operationId: tvCategoryDetail
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: catgryCd
           in: query
@@ -611,6 +691,9 @@ paths:
         - 위티TV
       summary: 신작/인기 카테고리 별 상세
       operationId: tvCategoryDetailNewPop
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: topCatgryCd
           in: query
@@ -646,6 +729,9 @@ paths:
         - 위티TV
       summary: 즐겨찾기 리스트 조회
       operationId: tvFavoritesList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: topCatgryCd
           in: query
@@ -669,6 +755,9 @@ paths:
         - 위티TV
       summary: 즐겨찾기 등록/해제
       operationId: tvFavoritesToggle
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -697,6 +786,9 @@ paths:
         - 위티TV
       summary: 플레이어 다음 컨텐츠 추천
       operationId: tvRecommend
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: catgryCd
           in: query
@@ -717,6 +809,9 @@ paths:
         - 위티TV
       summary: 전광판 조회
       operationId: tvEBoard
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 전광판 조회 성공
@@ -734,6 +829,9 @@ paths:
         - 위티플레이
       summary: 미니 게임 보유 위티팡 조회
       operationId: wittiPlayGameMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: contsId
           in: query
@@ -756,6 +854,9 @@ paths:
         - 위티플레이
       summary: 미니 게임 점수 조회
       operationId: wittiPlayGameScoreGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: contsId
           in: query
@@ -774,6 +875,9 @@ paths:
         - 위티플레이
       summary: 미니 게임 점수 저장
       operationId: wittiPlayGameScoreSave
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -804,6 +908,9 @@ paths:
         - 위티플레이
       summary: 미니 게임 랭킹 리스트 조회
       operationId: wittiPlayGameRanked
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: contsId
           in: query
@@ -824,6 +931,9 @@ paths:
         - 위티플레이
       summary: 미니 게임 초기화
       operationId: wittiPlayGameInit
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 미니 게임 초기화 성공
@@ -843,6 +953,7 @@ paths:
       operationId: configAppsList
       security:
         - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: ptnrId
           in: query
@@ -871,6 +982,9 @@ paths:
         - 위티박스(런처)
       summary: 커리큘럼 조회
       operationId: wittiBoxCurriculum
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: childId
           in: query
@@ -891,6 +1005,9 @@ paths:
         - 위티박스(런처)
       summary: 출석 시간 전송
       operationId: attendanceCurriculum
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -915,6 +1032,9 @@ paths:
         - 위티박스(런처)
       summary: 학습 리포트 > 부모(학생) / 주간
       operationId: parentReport
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -963,6 +1083,9 @@ paths:
         - 주간 리포트: reportType을 "WEEK"으로 설정하고, week 파라미터를 포함합니다. parentTp에 "T"를 설정합니다.
         - 월간 리포트: reportType을 "MONTH"로 설정하고, week 파라미터를 생략합니다. parentTp를 생략할 수 있습니다.
       operationId: teacherReport
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1010,6 +1133,9 @@ paths:
         - 위티박스(런처)
       summary: 학습 리포트 > 선생님 / 이 주 활동현황
       operationId: teacherActivityReport
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1051,6 +1177,9 @@ paths:
         - 위티박스(런처)
       summary: 오늘의 미션 이력/과목 조회
       operationId: missionTodayList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1077,6 +1206,9 @@ paths:
         - 위티박스(런처)
       summary: 학생 수업 상태 변경
       operationId: studyStatusUpdate
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1112,6 +1244,9 @@ paths:
         - 위티App
       summary: 캐릭터 초기화
       operationId: wittiAppInitCharacter
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 캐릭터 초기화 성공
@@ -1126,6 +1261,9 @@ paths:
         - 위티App
       summary: 캐릭터 생성/저장
       operationId: wittiAppCharacterSave
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1162,6 +1300,9 @@ paths:
         - 위티App
       summary: 캐릭터 조회
       operationId: wittiAppCharacterGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 캐릭터 조회 성공
@@ -1176,6 +1317,9 @@ paths:
         - 위티App
       summary: 미션 초기화
       operationId: wittiAppInitMission
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 미션 초기화 성공
@@ -1190,6 +1334,9 @@ paths:
         - 위티App
       summary: 출석 초기화
       operationId: wittiAppInitAttendance
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 출석 초기화 성공
@@ -1204,6 +1351,9 @@ paths:
         - 위티App
       summary: 디지털 학습기기 사용안내 보상
       operationId: wittiAppPromiseReward
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 보상 처리 성공
@@ -1218,6 +1368,9 @@ paths:
         - 위티App
       summary: 디지털 학습기기 사용안내 보상 초기화
       operationId: wittiAppPromiseRewardInit
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 보상 초기화 성공
@@ -1232,6 +1385,9 @@ paths:
         - 위티App
       summary: 설치 앱 버전 조회
       operationId: wittiAppInstlAppVer
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 설치 앱 버전 조회 성공
@@ -1246,6 +1402,9 @@ paths:
         - 위티App
       summary: 자녀 리스트 조회
       operationId: wittiAppChildList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 자녀 리스트 조회 성공
@@ -1260,6 +1419,9 @@ paths:
         - 위티App
       summary: 튜토리얼 수행 여부 조회
       operationId: wittiAppMission
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: misnGrp
           in: query
@@ -1282,6 +1444,9 @@ paths:
         - 위티App
       summary: 캐릭터 닉네임 유효성 조회
       operationId: wittiAppNicknameChk
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: nickName
           in: query
@@ -1304,6 +1469,9 @@ paths:
         - 위티App
       summary: 캐릭터 닉네임 랜덤 조회
       operationId: wittiAppNicknameRandom
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 랜덤 닉네임 조회 성공
@@ -1318,6 +1486,9 @@ paths:
         - 위티App
       summary: 보유 위티팡 조회 (메인 화면)
       operationId: wittiAppMain
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 보유 위티팡 조회 성공
@@ -1332,6 +1503,9 @@ paths:
         - 위티App
       summary: 위티팡 리스트 조회
       operationId: wittiAppRewardList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: rwrdClsTp
           in: query
@@ -1354,6 +1528,9 @@ paths:
         - 위티App
       summary: 위티팡 강제 지급
       operationId: wittiAppRewardCheat
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 위티팡 강제 지급 성공
@@ -1368,6 +1545,9 @@ paths:
         - 위티App
       summary: 라이브스케치 동물 리스트 조회
       operationId: wittiAppLiveSketchAnimalList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 동물 리스트 조회 성공
@@ -1380,6 +1560,9 @@ paths:
         - 위티App
       summary: 라이브스케치 동물 추가
       operationId: wittiAppLiveSketchAnimalAdd
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1404,6 +1587,9 @@ paths:
         - 위티App
       summary: 라이브스케치 보유동물 초기화
       operationId: wittiAppInitLiveSketch
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 보유동물 초기화 성공
@@ -1418,6 +1604,9 @@ paths:
         - 위티App
       summary: 라이브스케치 동물 삭제
       operationId: wittiAppLiveSketchAnimalDelete
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1442,6 +1631,9 @@ paths:
         - 위티App
       summary: 라이브스케치 이벤트 완료
       operationId: wittiAppLiveSketchEvent
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1469,6 +1661,9 @@ paths:
         - 위티App
       summary: 상점 아이템 리스트 조회
       operationId: wittiAppShopItemList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 상점 아이템 리스트 조회 성공
@@ -1483,6 +1678,9 @@ paths:
         - 위티App
       summary: 상점 미니카 리스트 조회
       operationId: wittiAppShopCarList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 상점 미니카 리스트 조회 성공
@@ -1497,6 +1695,9 @@ paths:
         - 위티App
       summary: 퀴즈 뱃지 조회
       operationId: wittiAppBadgeGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 퀴즈 뱃지 조회 성공
@@ -1509,6 +1710,9 @@ paths:
         - 위티App
       summary: 퀴즈 뱃지 장착/해제
       operationId: wittiAppBadgeToggle
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1537,6 +1741,9 @@ paths:
         - 위티App
       summary: OX 퀴즈 조회
       operationId: wittiAppQuiz
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: cornerTp
           in: query
@@ -1566,6 +1773,9 @@ paths:
         - 위티App
       summary: OX 퀴즈 선물 조회
       operationId: wittiAppQuizGiftGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: cornerTp
           in: query
@@ -1586,6 +1796,9 @@ paths:
         - 위티App
       summary: OX 퀴즈 선물 등록
       operationId: wittiAppQuizGiftRegister
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       description: "퀴즈 선물 등록. badgeIdx - police: 1001~1003, fire: 2001~2003"
       requestBody:
         required: true
@@ -1612,6 +1825,9 @@ paths:
         - 위티App
       summary: 황도12궁 별자리 조회
       operationId: wittiAppZodiacList
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 별자리 조회 성공
@@ -1626,6 +1842,9 @@ paths:
         - 위티App
       summary: 황도12궁 별자리 획득
       operationId: wittiAppZodiacOwned
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: zodiacId
           in: query
@@ -1648,6 +1867,9 @@ paths:
         - 위티App
       summary: 열기구 여행 기록 조회
       operationId: wittiAppTripAreaGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       responses:
         "200":
           description: 여행 기록 조회 성공
@@ -1660,6 +1882,9 @@ paths:
         - 위티App
       summary: 열기구 여행 기록 등록
       operationId: wittiAppTripAreaRegister
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1687,6 +1912,9 @@ paths:
         - 위티App
       summary: 열기구 여행 기록 삭제
       operationId: wittiAppTripAreaDelete
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1710,6 +1938,9 @@ paths:
         - 위티App
       summary: 열기구 여행 퀴즈 보상 이력 조회
       operationId: wittiAppTripQuizRewardGet
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: areaCd
           in: query
@@ -1731,6 +1962,9 @@ paths:
         - 위티App
       summary: 열기구 여행 퀴즈 보상 지급
       operationId: wittiAppTripQuizRewardRegister
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1761,6 +1995,9 @@ paths:
         - 위티App
       summary: 열기구 여행 퀴즈 보상 지급 초기화
       operationId: wittiAppTripQuizRewardDelete
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1791,6 +2028,9 @@ paths:
         - 공통
       summary: 콘텐츠 랜덤 추천
       operationId: contentsRandom
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       parameters:
         - name: randomTp
           in: query
@@ -1820,6 +2060,9 @@ paths:
         - 일반 학습 이력: 기본 필드만 전송
         - 포트폴리오 학습 이력: portfolio 배열을 추가로 포함하여 전송 (예: itemCd=AR0000011)
       operationId: iasSchool
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1887,6 +2130,9 @@ paths:
         - 학습 이력 등록
       summary: "위티스쿨 > 도서관"
       operationId: iasSchoolEbook
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1923,6 +2169,9 @@ paths:
         - 학습 이력 등록
       summary: "위티스쿨 > 상상놀이터 (MEW)"
       operationId: iasSchoolPlayground
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1956,6 +2205,9 @@ paths:
         - 학습 이력 등록
       summary: 위티TV
       operationId: iasTv
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1989,6 +2241,9 @@ paths:
         - 학습 이력 등록
       summary: "오늘의이야기 (미사용?)"
       operationId: iasCamp
+      security:
+        - XDeviceInfo: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:

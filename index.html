@@ -24,6 +24,9 @@
     }
     #auth-status b { color: #0d47a1; }
     .swagger-ui .info .main .url { display: none; }
+    .swagger-ui .auth-wrapper .authorize { display: none; }
+    .swagger-ui .authorization__btn { display: none; }
+    .swagger-ui .parameter__enum { display: none; }
   </style>
 </head>
 <body>
@@ -58,6 +61,7 @@
             var memId = data.result.memId || "";
 
             window._savedAuthToken = token;
+            if (data.result.refreshToken) window._savedRefreshToken = data.result.refreshToken;
             if (loginId) window._savedLoginId = loginId;
 
             var status = document.getElementById("auth-status");
@@ -79,19 +83,37 @@
           request.headers["X-device-info"] =
             "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6";
         }
-        var savedToken = window._savedAuthToken;
-        if (savedToken) {
-          request.headers["Authorization"] = "Bearer " + savedToken;
+        if (request.url.indexOf("/authenticate/token") !== -1 && window._savedRefreshToken) {
+          request.headers["Authorization"] = "Bearer " + window._savedRefreshToken;
+        } else if (window._savedAuthToken) {
+          request.headers["Authorization"] = "Bearer " + window._savedAuthToken;
         }
         if (request.body && request.url.indexOf("/authenticate/login") !== -1) {
           try {
             var body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
-            if (body.loginId) body.loginId = btoa(unescape(encodeURIComponent(body.loginId)));
+            if (body.loginId) {
+              window._savedLoginId = body.loginId;
+              body.loginId = btoa(unescape(encodeURIComponent(body.loginId)));
+            }
             if (body.loginPwd) body.loginPwd = btoa(unescape(encodeURIComponent(body.loginPwd)));
             request.body = JSON.stringify(body);
           } catch (e) {}
         }
         return request;
+      }
+    });
+
+    // 드롭다운에서 빈값 선택 시 Send empty value 체크박스 자동 체크
+    document.addEventListener('change', function(e) {
+      if (e.target.tagName === 'SELECT') {
+        var row = e.target.closest('tr') || e.target.closest('.parameter');
+        if (!row) return;
+        var cb = row.querySelector('input[type="checkbox"]');
+        if (cb && !cb.disabled) {
+          if (e.target.value === '') {
+            cb.click();
+          }
+        }
       }
     });
   </script>
