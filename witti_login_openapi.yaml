@@ -184,7 +184,7 @@ paths:
           description: "클래스 ID"
           schema:
             type: string
-            example: "C000000143"
+            example: "C000000140"
       responses:
         "200":
           description: 학생 목록 조회 성공
@@ -230,7 +230,7 @@ paths:
               properties:
                 studentId:
                   type: string
-                  example: "S000000818"
+                  example: "S000000815"
                 loginId:
                   type: string
                   example: "MGtest000"
@@ -381,15 +381,15 @@ paths:
         - name: itemCd
           in: query
           required: false
+          description: "품목ID"
           schema:
             type: string
-            example: "AR0000010"
         - name: tmlnDt
           in: query
           required: false
+          description: "날짜정보"
           schema:
             type: string
-            example: "2025-06-26"
       responses:
         "200":
           description: 아람북월드 메인 조회 성공
@@ -445,6 +445,10 @@ paths:
           schema:
             type: string
             enum: [KOR, MTH, SCI]
+          x-enum-descriptions:
+            - "국어"
+            - "수학"
+            - "과학"
         - name: ptnrId
           in: query
           required: true
@@ -460,10 +464,13 @@ paths:
         - name: itemCd
           in: query
           required: false
-          description: "아이템 코드 - AR0000010 (Step1), AR0000011 (Step2)"
+          description: "아이템 코드"
           schema:
             type: string
             enum: [AR0000010, AR0000011]
+          x-enum-descriptions:
+            - "STEP1"
+            - "STEP2"
         - name: pageNo
           in: query
           required: false
@@ -534,15 +541,7 @@ paths:
           in: query
           required: true
           allowEmptyValue: true
-          description: |
-            카테고리 코드 (빈값: 전체)
-            - CA-250610P3000000000: 역사/신화
-            - CA-250610P3000000001: 성/안전
-            - CA-250610P3000000002: 키즈교양
-            - CA-240708P3000000000: 생활/인성
-            - CA-240708P3000000001: 명작/예술
-            - CA-240708P3000000002: 수학/과학
-            - CA-240708P3000000003: 언어/사고
+          description: "카테고리 코드 (빈값: 전체)"
           schema:
             type: string
             enum:
@@ -554,6 +553,15 @@ paths:
               - CA-240708P3000000001
               - CA-240708P3000000002
               - CA-240708P3000000003
+          x-enum-descriptions:
+            - ""
+            - "역사/신화"
+            - "성/안전"
+            - "키즈교양"
+            - "생활/인성"
+            - "명작/예술"
+            - "수학/과학"
+            - "언어/사고"
       responses:
         "200":
           description: 도서관 책 리스트 조회 성공
@@ -599,6 +607,11 @@ paths:
           schema:
             type: string
             enum: [L3000, L3001, L3002, L3004]
+          x-enum-descriptions:
+            - "위티TV 홈"
+            - "위티프렌즈"
+            - "아람북월드"
+            - "똑똑하마"
       responses:
         "200":
           description: 카테고리 리스트 조회 성공
@@ -640,12 +653,24 @@ paths:
           description: "카테고리 코드"
           schema:
             type: string
+            enum: [L3001, L3002, L3004]
+          x-enum-descriptions:
+            - "위티프렌즈"
+            - "아람북월드"
+            - "똑똑하마"
         - name: subCatgryCd
           in: query
           required: false
           description: "하위 카테고리 코드"
           schema:
             type: string
+            enum: [CA-230731P3000000000, CA-230731P3000000001, CA-240216P0000000001, CA-240216P0000000000, CA-240510P4195972829]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화"
+            - "위티프렌즈 / 동요"
+            - "아람북월드 / 동화"
+            - "아람북월드 / 동요"
+            - "똑똑하마 / TV영상"
       responses:
         "200":
           description: 메인 (카테고리) 조회 성공
@@ -670,6 +695,13 @@ paths:
           description: "카테고리 코드"
           schema:
             type: string
+            enum: [CA-230731P3000000000, CA-230731P3000000001, CA-240216P0000000001, CA-240216P0000000000, CA-240510P4195972829]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화"
+            - "위티프렌즈 / 동요"
+            - "아람북월드 / 동화"
+            - "아람북월드 / 동요"
+            - "똑똑하마 / TV영상"
         - name: searchTp
           in: query
           required: false
@@ -677,6 +709,11 @@ paths:
           schema:
             type: string
             enum: [unwatched, watched, new, popular]
+          x-enum-descriptions:
+            - "시청하지 않은 영상"
+            - "시청한 영상"
+            - "새로운 영상"
+            - "자주보는영상"
       responses:
         "200":
           description: 카테고리 별 상세 조회 성공
@@ -700,21 +737,43 @@ paths:
           required: true
           schema:
             type: string
+            enum: [L3001, L3002, L3004]
+          x-enum-descriptions:
+            - "위티프렌즈 전체"
+            - "아람북월드 전체"
+            - "똑똑하마 전체"
         - name: upCatgryCd
           in: query
           required: true
           schema:
             type: string
+            enum: [CA-230731P3000000000, CA-230731P3000000001, CA-240216P0000000001, CA-240216P0000000000, CA-240510P4195972829]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화 전체"
+            - "위티프렌즈 / 동요 전체"
+            - "아람북월드 / 동화 전체"
+            - "아람북월드 / 동요 전체"
+            - "똑똑하마 / TV영상 전체"
         - name: newPopTp
           in: query
           required: true
           schema:
             type: string
+            enum: [new, pop]
+          x-enum-descriptions:
+            - "신작"
+            - "인기"
         - name: searchTp
           in: query
           required: true
           schema:
             type: string
+            enum: [unwatched, watched, new, popular]
+          x-enum-descriptions:
+            - "시청하지 않은 영상"
+            - "시청한 영상"
+            - "새로운 영상"
+            - "자주보는영상"
       responses:
         "200":
           description: 신작/인기 카테고리 별 상세 조회 성공
@@ -738,11 +797,23 @@ paths:
           required: true
           schema:
             type: string
+            enum: [L3001, L3002, L3004]
+          x-enum-descriptions:
+            - "위티프렌즈 전체"
+            - "아람북월드 전체"
+            - "똑똑하마 전체"
         - name: upCatgryCd
           in: query
           required: true
           schema:
             type: string
+            enum: [CA-230731P3000000000, CA-230731P3000000001, CA-240216P0000000001, CA-240216P0000000000, CA-240510P4195972829]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화 전체"
+            - "위티프렌즈 / 동요 전체"
+            - "아람북월드 / 동화 전체"
+            - "아람북월드 / 동요 전체"
+            - "똑똑하마 / TV영상 전체"
       responses:
         "200":
           description: 즐겨찾기 리스트 조회 성공
@@ -790,11 +861,56 @@ paths:
         - XDeviceInfo: []
         - BearerAuth: []
       parameters:
+        - name: topCatgryCd
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [L3001, L3002, L3004]
+          x-enum-descriptions:
+            - "위티프렌즈 전체"
+            - "아람북월드 전체"
+            - "똑똑하마 전체"
+        - name: upCatgryCd
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [CA-230731P3000000000, CA-230731P3000000001, CA-240216P0000000001, CA-240216P0000000000, CA-240510P4195972829]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화 전체"
+            - "위티프렌즈 / 동요 전체"
+            - "아람북월드 / 동화 전체"
+            - "아람북월드 / 동요 전체"
+            - "똑똑하마 / TV영상 전체"
         - name: catgryCd
           in: query
           required: true
           schema:
             type: string
+            enum: [CA-230731P3000010002, CA-230731P3000000022, CA-230731P3000000011, CA-230731P3000000066, CA-230731P3000000055, CA-230731P3000000044, CA-230731P3000000033, CA-240625P3410351621, CA-240625P1597666939, CA-240216P1000000006, CA-240216P1000000004, CA-240216P1000000003, CA-240216P1000000002, CA-240625P2398250913, CA-240625P5374442451, CA-240625P5593068393, CA-240625P2342779666, CA-240216P1000000007, CA-240216P1000000005, CA-240216P1000000001, CA-240510P2036141492]
+          x-enum-descriptions:
+            - "위티프렌즈 / 동화 / 자연관찰"
+            - "위티프렌즈 / 동요 / 건강 쑥쑥 체조"
+            - "위티프렌즈 / 동요 / 생활습관&안전"
+            - "위티프렌즈 / 동요 / 생생 직업 탐험"
+            - "위티프렌즈 / 동요 / 세계 간식 탐험"
+            - "위티프렌즈 / 동요 / 뚝딱뚝딱 요리"
+            - "위티프렌즈 / 동요 / 국악 전래놀이"
+            - "아람북월드 / 동화 / 호기심 해결사"
+            - "아람북월드 / 동화 / 꼭꼭 생활습관"
+            - "아람북월드 / 동화 / 프리미엄 동화"
+            - "아람북월드 / 동화 / 알쏭달쏭 탐구"
+            - "아람북월드 / 동화 / 세계 속 이야기"
+            - "아람북월드 / 동화 / 리더십&인성(동화)"
+            - "아람북월드 / 동요 / 알쏭달쏭 탐구"
+            - "아람북월드 / 동요 / 리더십&인성(동요)"
+            - "아람북월드 / 동요 / 세계 속 이야기"
+            - "아람북월드 / 동요 / 프리미엄 동화"
+            - "아람북월드 / 동요 / 호기심 해결사"
+            - "아람북월드 / 동요 / 재미 팡팡 동요"
+            - "아람북월드 / 동요 / 꼭꼭 생활습관"
+            - "똑똑하마 / TV영상 / 과학놀이"
       responses:
         "200":
           description: 다음 컨텐츠 추천 조회 성공
@@ -839,7 +955,13 @@ paths:
           description: "콘텐츠 ID"
           schema:
             type: string
-            example: "CB-240129000000G0001"
+            enum: [CB-240129000000G0001, CB-240129000000G0002, CB-240129000000G0003, CB-240129000000G0004, CB-240129000000G0005]
+          x-enum-descriptions:
+            - "달려라 위티"
+            - "점프&점프"
+            - "캔디+캔디"
+            - "리듬 팡!팡!"
+            - "캔디 굴리기"
       responses:
         "200":
           description: 보유 위티팡 조회 성공
@@ -863,6 +985,13 @@ paths:
           required: true
           schema:
             type: string
+            enum: [CB-240129000000G0001, CB-240129000000G0002, CB-240129000000G0003, CB-240129000000G0004, CB-240129000000G0005]
+          x-enum-descriptions:
+            - "달려라 위티"
+            - "점프&점프"
+            - "캔디+캔디"
+            - "리듬 팡!팡!"
+            - "캔디 굴리기"
       responses:
         "200":
           description: 미니 게임 점수 조회 성공
@@ -917,6 +1046,13 @@ paths:
           required: true
           schema:
             type: string
+            enum: [CB-240129000000G0001, CB-240129000000G0002, CB-240129000000G0003, CB-240129000000G0004, CB-240129000000G0005]
+          x-enum-descriptions:
+            - "달려라 위티"
+            - "점프&점프"
+            - "캔디+캔디"
+            - "리듬 팡!팡!"
+            - "캔디 굴리기"
       responses:
         "200":
           description: 미니 게임 랭킹 리스트 조회 성공
@@ -964,10 +1100,15 @@ paths:
         - name: managedYn
           in: query
           required: true
-          description: "관리 여부"
+          allowEmptyValue: true
+          description: "관리 여부 (빈값: 녹스)"
           schema:
             type: string
-            enum: [N, B]
+            enum: ["", N, B]
+          x-enum-descriptions:
+            - ""
+            - "늘봄"
+            - "녹스 X"
       responses:
         "200":
           description: 런처 앱 리스트 조회 성공
@@ -989,6 +1130,7 @@ paths:
         - name: childId
           in: query
           required: true
+          description: "memId 값 입력"
           schema:
             type: string
       responses:
@@ -1514,6 +1656,9 @@ paths:
           schema:
             type: string
             enum: [P, M]
+          x-enum-descriptions:
+            - "획득 내역 조회"
+            - "사용 내역 조회"
       responses:
         "200":
           description: 위티팡 리스트 조회 성공
@@ -1752,6 +1897,9 @@ paths:
           schema:
             type: string
             enum: [fire, police]
+          x-enum-descriptions:
+            - "도전! 소방관"
+            - "도전! 경찰관"
         - name: quizCatgry
           in: query
           required: true
@@ -1759,6 +1907,19 @@ paths:
           schema:
             type: string
             enum: [firefight, save, comm, rescue, helicopter, etc, safety, traffic, investigate, patrol, security, international]
+          x-enum-descriptions:
+            - "소방관 - 소방"
+            - "소방관 - 구조"
+            - "소방관 - 통신"
+            - "소방관 - 구급"
+            - "소방관 - 헬기"
+            - "소방관 - 기타"
+            - "경찰관 - 안전"
+            - "경찰관 - 교통"
+            - "경찰관 - 조사"
+            - "경찰관 - 순찰"
+            - "경찰관 - 보안"
+            - "경찰관 - 해외"
       responses:
         "200":
           description: OX 퀴즈 조회 성공
@@ -1784,6 +1945,9 @@ paths:
           schema:
             type: string
             enum: [fire, police]
+          x-enum-descriptions:
+            - "도전! 소방관"
+            - "도전! 경찰관"
       responses:
         "200":
           description: OX 퀴즈 선물 조회 성공
@@ -2039,6 +2203,9 @@ paths:
           schema:
             type: string
             enum: [MSC, CAMP]
+          x-enum-descriptions:
+            - "뮤직박스"
+            - "오늘의 이야기"
       responses:
         "200":
           description: 콘텐츠 랜덤 추천 조회 성공

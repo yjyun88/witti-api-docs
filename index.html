@@ -34,6 +34,9 @@
   <div id="swagger-ui"></div>
   <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
   <script>
+    // 파라미터별 enum-description 매핑 (paramName -> { value: description })
+    var paramEnumDescs = {};
+
     const ui = SwaggerUIBundle({
       url: "witti_login_openapi.yaml",
       dom_id: '#swagger-ui',
@@ -46,6 +49,34 @@
           "XDeviceInfo",
           "QW5kcm9pZC4zMzo6OlI5VFgyMDJHNUFFTTo6OlI5VFgyMDJHNUFFTTo6OktOT1g6OjpTTS1YMjE2Ojo6YXBwLjE0Ojo6"
         );
+
+        // spec 객체에서 x-enum-descriptions 추출
+        try {
+          var spec = ui.specSelectors.specJson().toJS();
+          var paths = spec.paths || {};
+          Object.keys(paths).forEach(function(path) {
+            var methods = paths[path];
+            Object.keys(methods).forEach(function(method) {
+              var op = methods[method];
+              if (!op || !op.parameters) return;
+              op.parameters.forEach(function(param) {
+                var descs = param["x-enum-descriptions"];
+                var enums = param.schema && param.schema.enum;
+                if (descs && enums && enums.length === descs.length) {
+                  for (var i = 0; i < enums.length; i++) {
+                    var key = String(enums[i]);
+                    if (key !== "" && descs[i] !== "") {
+                      if (!paramEnumDescs[key]) paramEnumDescs[key] = descs[i];
+                    }
+                  }
+                }
+              });
+            });
+          });
+          console.log("[enum-desc] loaded", Object.keys(paramEnumDescs).length, "entries:", paramEnumDescs);
+        } catch(e) {
+          console.error("[enum-desc] spec parse error:", e);
+        }
       },
 
       // 로그인/학습시작 응답에서 authToken 자동 저장 + 갱신
@@ -103,14 +134,35 @@
       }
     });
 
-    // 드롭다운에서 빈값 선택 시 Send empty value 체크박스 자동 체크
+    // 드롭다운 옵션에 enum description 표시
+    function patchDropdowns() {
+      document.querySelectorAll(".swagger-ui select").forEach(function(sel) {
+        sel.querySelectorAll("option").forEach(function(opt) {
+          var val = opt.value;
+          var desc = paramEnumDescs[val];
+          if (desc && opt.textContent.indexOf("(") === -1) {
+            opt.textContent = val + " (" + desc + ")";
+          }
+        });
+      });
+    }
+
+    new MutationObserver(function() {
+      setTimeout(patchDropdowns, 100);
+    }).observe(document.getElementById("swagger-ui"), { childList: true, subtree: true });
+
+    // 드롭다운에서 빈값 선택 시 Send empty value 체크박스 자동 체크/해제
     document.addEventListener('change', function(e) {
       if (e.target.tagName === 'SELECT') {
         var row = e.target.closest('tr') || e.target.closest('.parameter');
         if (!row) return;
         var cb = row.querySelector('input[type="checkbox"]');
         if (cb && !cb.disabled) {
-          if (e.target.value === '') {
+          var isEmpty = e.target.value === '';
+          var isChecked = cb.checked;
+          if (isEmpty && !isChecked) {
+            cb.click();
+          } else if (!isEmpty && isChecked) {
             cb.click();
           }
         }
