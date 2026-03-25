@@ -2014,8 +2014,34 @@ paths:
           in: query
           required: true
           description: "별자리 ID"
+          x-enum-descriptions:
+            - "양자리"
+            - "황소자리"
+            - "쌍둥이자리"
+            - "게자리"
+            - "사자자리"
+            - "처녀자리"
+            - "천칭자리"
+            - "전갈자리"
+            - "궁수자리"
+            - "염소자리"
+            - "물병자리"
+            - "물고기자리"
           schema:
             type: string
+            enum:
+              - "Zodiac_001_Aries"
+              - "Zodiac_002_Taurus"
+              - "Zodiac_003_Gemini"
+              - "Zodiac_004_Cancer"
+              - "Zodiac_005_Leo"
+              - "Zodiac_006_Virgo"
+              - "Zodiac_007_Libra"
+              - "Zodiac_008_Scorpio"
+              - "Zodiac_009_Sagittarius"
+              - "Zodiac_010_Capricorn"
+              - "Zodiac_011_Aquarius"
+              - "Zodiac_012_Pisces"
             example: "Zodiac_002_Taurus"
       responses:
         "200":
