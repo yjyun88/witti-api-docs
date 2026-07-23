@@ -6,11 +6,11 @@ info:
 
 servers:
   - url: https://api.wittiverse.com/v2
-    description: Production
+    description: PRD
   - url: https://qa-api.wittiverse.com/v2
     description: QA
   - url: https://dev-api.wittiverse.com/v2
-    description: Dev
+    description: DEV
 
 tags:
   - name: 인증 (로그인/토큰)
